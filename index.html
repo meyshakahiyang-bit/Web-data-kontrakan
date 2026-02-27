@@ -187,12 +187,13 @@ img.preview { width: 100%; height: 100%; object-fit: cover; }
 <script>
 // --- KONFIGURASI FIREBASE ---
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "SENDER_ID",
-    appId: "APP_ID"
+  apiKey: "AIzaSyAXR8aBE9WbP3PTGtSYAQhO7uZsQHObuyU",
+  authDomain: "data-kontrakan.firebaseapp.com",
+  projectId: "data-kontrakan",
+  storageBucket: "data-kontrakan.firebasestorage.app",
+  messagingSenderId: "756729711997",
+  appId: "1:756729711997:web:d0f36f8887f5ab97365014",
+  measurementId: "G-M70Z6PB2SN"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -433,4 +434,4 @@ mc.on("panend", () => { lX = cX; lY = cY; });
 function up() { imgV.style.transform = `translate3d(${cX}px, ${cY}px, 0) scale(${sc})`; }
 </script>
 </body>
-    </html>
+        </html>
