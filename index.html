@@ -5,11 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>G-MEY POETRA PREMIUM V33 FINAL</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 :root {
     --primary: #00d2ff;
     --gold-muted: #c5a059;
-    --danger-deep: #b33939; /* Warna merah untuk tombol danger */
+    --danger-deep: #b33939; 
     --success-deep: #218c74;
     --text-soft: #d1d8e0;
     --text-muted: #84817a;
@@ -43,11 +48,11 @@ body{
 .dot { height: 6px; width: 6px; background-color: #2ecc71; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #2ecc71; }
 
 .sidebar{
-    position:fixed; top:60px; left:-210px; width:130px; 
-    height: auto; /* Mengikuti tinggi konten */
+    position:fixed; top:60px; left:-210px; width:150px; 
+    height: auto; 
     background: rgba(10, 15, 20, 0.98);
     backdrop-filter: blur(20px); 
-    padding: 20px 10px; /* Padding disesuaikan */
+    padding: 20px 10px; 
     transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
     z-index: 2000; border-radius: 0 0 20px 0;
     border-right: 1px solid var(--gold-muted); border-bottom: 1px solid var(--gold-muted);
@@ -55,18 +60,17 @@ body{
 .sidebar.active{left:0;}
 .sidebar button{
     width:100%; 
-    padding: 15px 10px; /* Padding tombol disesuaikan */
-    margin-bottom: 15px; /* Jarak antar tombol disesuaikan */
+    padding: 15px 10px; 
+    margin-bottom: 15px; 
     border:none; border-radius:8px;
     background: transparent; 
-    color: var(--gold-muted); /* Warna emas untuk menu */
+    color: var(--gold-muted); 
     text-align:left; font-size:13px; cursor:pointer; 
     border-bottom: 1px solid var(--glass-border);
 }
-/* Logout tetap merah */
 .sidebar button:last-child {
     color: var(--danger-deep);
-    margin-bottom: 0; /* Menghilangkan margin bawah tombol terakhir */
+    margin-bottom: 0; 
 }
 
 .content{ 
@@ -76,7 +80,6 @@ body{
 }
 .blur-bg { filter: blur(10px); opacity: 0.4; }
 
-/* KONTAINER UTAMA FULL LAYAR */
 .card-elegan {
     background: var(--glass-bg); backdrop-filter: blur(25px);
     padding: 15px; border-radius: 15px;
@@ -109,7 +112,6 @@ body{
 .unit-isi { border-color: var(--success-deep) !important; color: var(--success-deep) !important; }
 .unit-kosong { border-color: var(--gold-muted) !important; color: var(--gold-muted) !important; opacity: 0.6; }
 
-/* TEXT & INPUT PERBESAR */
 input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--gold-muted); background: rgba(0,0,0,0.3); color: #fff; outline: none; font-size: 14px; margin-bottom: 8px; }
 .img-box { border-radius: 8px; overflow: hidden; height: 100px; width: 100%; border: 1px solid var(--glass-border); margin-bottom: 5px; }
 img.preview { width: 100%; height: 100%; object-fit: cover; }
@@ -128,17 +130,17 @@ img.preview { width: 100%; height: 100%; object-fit: cover; }
 .hidden { display: none !important; }
 #displayArea { height: 100%; flex: 1; display: flex; flex-direction: column; }
 
-/* Scrollbar Style */
 #listTerisi::-webkit-scrollbar, #detHist::-webkit-scrollbar { width: 5px; }
 #listTerisi::-webkit-scrollbar-thumb, #detHist::-webkit-scrollbar-thumb { background: var(--gold-muted); border-radius: 10px; }
 </style>
 </head>
 <body>
 
-<div id="loginScreen" style="padding: 150px 40px; text-align: center;">
+<div id="loginScreen" style="padding: 100px 40px; text-align: center;">
     <h2 style="color: var(--gold-muted); letter-spacing: 5px; font-weight: 300; margin-bottom: 20px;">G-MEY POETRA</h2>
-    <input type="password" id="pass" placeholder="PIN" style="text-align:center; letter-spacing:10px; max-width: 250px;">
-    <button class="btn-3d" onclick="login()" style="max-width: 250px; display: block; margin: 20px auto;">ENTER</button>
+    <input type="email" id="email" placeholder="Email" style="text-align:center;">
+    <input type="password" id="pass" placeholder="Password" style="text-align:center;">
+    <button class="btn-3d" onclick="login()" style="max-width: 250px; display: block; margin: 20px auto;">LOGIN</button>
 </div>
 
 <div id="mainApp" class="app-container" style="display:none;">
@@ -151,8 +153,7 @@ img.preview { width: 100%; height: 100%; object-fit: cover; }
     <div class="sidebar" id="sidebar">
         <button onclick="showDashboard()">Dashboard</button>
         <button onclick="openFolder()">Kamar</button>
-        <button onclick="showHistory()">Riwayat</button>
-        <button onclick="location.reload()">Logout</button>
+        <button onclick="exportPDF()">Cetak PDF</button> <button onclick="logout()">Logout</button>
     </div>
 
     <div class="content" id="mainContent" onclick="closeSidebar()">
@@ -183,58 +184,42 @@ img.preview { width: 100%; height: 100%; object-fit: cover; }
     <div id="zoomArea" style="flex:1; display:flex; justify-content:center; align-items:center;"><img id="fullImage" style="max-width:100%;"></div>
 </div>
 
-<script type="module">
+<script>
 // --- KONFIGURASI FIREBASE ---
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
 const firebaseConfig = {
-    apiKey: "AIzaSyAXR8aBE9WbP3PTGtSYAQhO7uZsQHObuyU",
-    authDomain: "data-kontrakan.firebaseapp.com",
-    projectId: "data-kontrakan",
-    storageBucket: "data-kontrakan.firebasestorage.app",
-    messagingSenderId: "756729711997",
-    appId: "1:756729711997:web:aed5c78db1d6d739365014",
-    measurementId: "G-T9W5XEB1H3"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// Data akan disinkronisasi dari Firestore
-let data = {};
-let history = []; 
-
-// --- KONFIGURASI PIN ---
-const PIN_LOGIN = "123";
-const PIN_HAPUS = "321";
+let data = {}; 
 
 const formatTgl = (t) => { if(!t) return "-"; const [y,m,d] = t.split('-'); return `${d}/${m}/${y}`; };
 
-// Make functions global so they can be called from onclick handlers
-window.login = login;
-window.toggleSidebar = toggleSidebar;
-window.closeSidebar = closeSidebar;
-window.showDashboard = showDashboard;
-window.openFolder = openFolder;
-window.detail = detail;
-window.simpan = simpan;
-window.checkout = checkout;
-window.showHistory = showHistory;
-window.detHist = detHist;
-window.hapusRiwayat = hapusRiwayat;
-window.openViewer = openViewer;
-window.closeViewer = closeViewer;
-
+// --- LOGIN & LOGOUT ---
 function login() {
-    if(document.getElementById("pass").value === PIN_LOGIN) {
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("mainApp").style.display = "flex";
-        showDashboard();
-    } else { alert("PIN Login Salah!"); }
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("pass").value;
+    auth.signInWithEmailAndPassword(email, pass)
+        .then(() => {
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("mainApp").style.display = "flex";
+            showDashboard();
+        })
+        .catch((error) => { alert("Login Gagal: " + error.message); });
 }
 
+function logout() {
+    auth.signOut().then(() => { location.reload(); });
+}
+
+// --- SIDEBAR ---
 function toggleSidebar(e) {
     e.stopPropagation();
     document.getElementById("sidebar").classList.toggle("active");
@@ -257,13 +242,10 @@ function showDashboard() {
     document.getElementById("dashView").classList.remove("hidden");
     document.getElementById("displayArea").classList.add("hidden");
 
-    // Ambil data real-time dari Firestore
-    onSnapshot(collection(db, "kamar"), (snapshot) => {
-        data = {}; // Reset data lokal
-        snapshot.forEach((doc) => {
-            data[doc.id] = doc.data();
-        });
-
+    db.collection("kamar").onSnapshot((snapshot) => {
+        data = {};
+        snapshot.forEach((doc) => { data[doc.id] = doc.data(); });
+        
         let terisiArr = Object.entries(data).sort((a,b) => a[0] - b[0]);
         document.getElementById("t1").innerText = terisiArr.length;
         document.getElementById("t2").innerText = 16 - terisiArr.length;
@@ -283,6 +265,7 @@ function showDashboard() {
     });
 }
 
+// --- FUNGSI KAMAR ---
 function openFolder() {
     closeSidebar();
     let h = `<div class="stats-grid-unit">`; 
@@ -332,6 +315,46 @@ function detail(no) {
     render(h);
 }
 
+// --- FUNGSI PDF ---
+function exportPDF() {
+    closeSidebar();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Laporan Data Kontrakan - G-MEY POETRA", 14, 20);
+    
+    let yPos = 30;
+    doc.setFontSize(12);
+    
+    // Header Tabel
+    doc.text("Kamar", 14, yPos);
+    doc.text("Nama Penghuni", 40, yPos);
+    doc.text("Status", 110, yPos);
+    doc.text("Tgl Masuk", 150, yPos);
+    
+    yPos += 5;
+    doc.line(14, yPos, 190, yPos); // Garis
+    yPos += 10;
+
+    // Isi Tabel
+    Object.entries(data).sort((a,b) => a[0] - b[0]).forEach(([no, d]) => {
+        doc.text(String(no), 14, yPos);
+        doc.text(d.nama, 40, yPos);
+        doc.text(d.status, 110, yPos);
+        doc.text(formatTgl(d.masuk), 150, yPos);
+        yPos += 10;
+        
+        if (yPos > 280) { // Halaman baru jika penuh
+            doc.addPage();
+            yPos = 20;
+        }
+    });
+
+    doc.save("Laporan_Kontrakan.pdf");
+}
+
+// --- SIMPAN & CHECKOUT ---
 async function compressImg(file) {
     return new Promise((res) => {
         if (!file) return res("");
@@ -349,11 +372,9 @@ async function compressImg(file) {
     });
 }
 
-// --- SIMPAN DATA KE FIREBASE ---
 async function simpan(no) {
     const btn = document.getElementById("btnSave");
     btn.innerText = "PROSES..."; btn.disabled = true;
-    
     const ktpImg = await compressImg(document.getElementById("iKtp").files[0]);
     const aktaImg = await compressImg(document.getElementById("iAkta").files[0]);
     
@@ -365,39 +386,29 @@ async function simpan(no) {
         akta: aktaImg 
     };
 
-    // Simpan ke Firestore
-    try {
-        await setDoc(doc(db, "kamar", String(no)), dataKamar);
-        alert("Data Tersimpan di Cloud!");
+    db.collection("kamar").doc(String(no)).set(dataKamar)
+    .then(() => {
+        alert("Data Tersimpan!");
         showDashboard();
-    } catch (e) {
-        alert("Gagal menyimpan data: " + e.message);
+    })
+    .catch((error) => {
+        alert("Gagal: " + error.message);
         btn.innerText = "SIMPAN DATA"; btn.disabled = false;
-    }
+    });
 }
 
-// --- CHECKOUT DATA DARI FIREBASE ---
-async function checkout(no) {
+function checkout(no) {
     if(confirm("Checkout kamar ini?")) {
-        try {
-            await deleteDoc(doc(db, "kamar", String(no))); // Hapus dari Firestore
+        db.collection("kamar").doc(String(no)).delete()
+        .then(() => {
             alert("Kamar berhasil di-checkout!");
             showDashboard();
-        } catch (e) {
-            alert("Gagal checkout: " + e.message);
-        }
+        })
+        .catch((error) => alert("Gagal: " + error.message));
     }
 }
 
-// --- FUNGSI RIWAYAT (Bisa dikembangkan menggunakan koleksi baru di Firestore) ---
-function showHistory() {
-    alert("Fitur Riwayat sedang dalam pengembangan untuk versi Cloud.");
-}
-function hapusRiwayat(i) {
-    alert("Fitur Hapus Riwayat sedang dalam pengembangan.");
-}
-
-// --- OPTIMASI ZOOM & GESER ---
+// --- OPTIMASI ZOOM ---
 const imgV = document.getElementById("fullImage"), zA = document.getElementById("zoomArea");
 let mc = new Hammer(zA); 
 mc.get('pinch').set({ enable: true });
@@ -422,4 +433,4 @@ mc.on("panend", () => { lX = cX; lY = cY; });
 function up() { imgV.style.transform = `translate3d(${cX}px, ${cY}px, 0) scale(${sc})`; }
 </script>
 </body>
-</html>
+    </html>
